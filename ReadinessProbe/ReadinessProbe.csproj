@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Authors>IharYakimush</Authors>
+    <PackageTags>readiness probe kubernetes</PackageTags>
+    <Description>Adds readiness probe endpoint to AspNetCore applications which can be used by kubernetes. Allows to perform time consuming operations after startup and indicate that app not ready to receive traffic during this time.</Description>
+    <PackageProjectUrl>https://github.com/IharYakimush/ReadinessProbe</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/IharYakimush/ReadinessProbe/blob/master/LICENSE</PackageLicenseUrl>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>sgn.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.0" />
+  </ItemGroup>
+
+</Project>
