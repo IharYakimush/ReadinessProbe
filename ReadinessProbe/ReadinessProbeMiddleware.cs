@@ -1,14 +1,110 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace ReadinessProbe
 {
     public class ReadinessProbeMiddleware : IMiddleware
     {
-        public Task InvokeAsync(HttpContext context, RequestDelegate next)
+        private static readonly EventId ExceptionEvent = new EventId(500, "ReadinessCheckException");
+        private static readonly EventId NotReadyEvent = new EventId(503, "ReadinessCheckNegative");
+        private static readonly EventId TimeoutEvent = new EventId(504, "ReadinessCheckTimeout");
+        private static readonly EventId RequestAbortedEvent = new EventId(505, "ReadinessCheckRequestAborted");
+
+        public ReadinessProbeMiddleware(IOptions<ReadinessProbeOptions> options, ILoggerFactory loggerFactory = null)
         {
-            throw new NotImplementedException();
+            Options = options.Value;
+            loggerFactory = loggerFactory ?? new NullLoggerFactory();
+            logger = loggerFactory.CreateLogger(this.Options.LoggerCategory);
+        }
+
+        public ReadinessProbeOptions Options { get; }
+
+        public ILogger logger;
+
+        public async Task InvokeAsync(HttpContext context, RequestDelegate next)
+        {
+            if (!context.Response.HasStarted)
+            {
+                CancellationTokenSource timeout = new CancellationTokenSource(this.Options.CheckAllTimeout);
+
+                CancellationTokenSource linkedTokenSource =
+                    CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted, timeout.Token);
+
+                foreach (var check in context.RequestServices.GetServices<IReadinessCheck>())
+                {
+                    try
+                    {
+                        linkedTokenSource.Token.ThrowIfCancellationRequested();
+
+                        bool result = await check.Check(linkedTokenSource.Token);
+
+                        if (!result)
+                        {
+                            context.Response.StatusCode = (int) this.Options.NotReadyCode;
+
+                            if (this.Options.LogNotReady)
+                            {
+                                this.logger.LogError(NotReadyEvent, NotReadyEvent.Name);
+                            }
+
+                            return;
+                        }
+                    }
+                    catch (OperationCanceledException canceledException)
+                    {
+                        if (context.RequestAborted.IsCancellationRequested)
+                        {
+                            if (this.Options.LogRequestAborted)
+                            {
+                                this.logger.LogWarning(RequestAbortedEvent, canceledException, RequestAbortedEvent.Name);
+                            }
+
+                            return;
+                        }
+
+                        if (timeout.IsCancellationRequested)
+                        {
+                            context.Response.StatusCode = (int)this.Options.TimeoutCode;
+
+                            if (this.Options.LogTimeout)
+                            {
+                                this.logger.LogError(TimeoutEvent, canceledException, TimeoutEvent.Name);
+                            }
+
+                            return;
+                        }
+
+                        // OperationCanceledException from unknown source treated as generic exception
+                        HandleException(context, canceledException);
+
+                        return;
+                    }
+                    catch (Exception e)
+                    {
+                        HandleException(context, e);
+
+                        return;
+                    }   
+                }
+
+                context.Response.StatusCode = (int)this.Options.ReadyCode;
+            }
+        }
+
+        private void HandleException(HttpContext context, Exception e)
+        {
+            context.Response.StatusCode = (int) this.Options.ErrorCode;
+
+            if (this.Options.LogError)
+            {
+                this.logger.LogError(ExceptionEvent, e, ExceptionEvent.Name);
+            }
         }
     }
 }
