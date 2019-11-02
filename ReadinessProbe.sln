@@ -5,7 +5,16 @@ VisualStudioVersion = 15.0.28010.2016
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadinessProbe", "ReadinessProbe\ReadinessProbe.csproj", "{DDF1BEB8-D055-4B93-9AE3-90DCD0D857DD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadinessProbe.Sample", "ReadinessProbe.Sample\ReadinessProbe.Sample.csproj", "{4BDF9F98-F429-4ED1-86B9-8E3CE080E8F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadinessProbe.Sample", "ReadinessProbe.Sample\ReadinessProbe.Sample.csproj", "{4BDF9F98-F429-4ED1-86B9-8E3CE080E8F5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0337147F-B133-401F-A9BA-ED3C6EA2EFB9}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadinessProbe.Tests", "ReadinessProbe.Tests\ReadinessProbe.Tests.csproj", "{79DF7298-7B08-4BDD-88A0-DAC5EF2BFB4E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +30,10 @@ Global
 		{4BDF9F98-F429-4ED1-86B9-8E3CE080E8F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4BDF9F98-F429-4ED1-86B9-8E3CE080E8F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4BDF9F98-F429-4ED1-86B9-8E3CE080E8F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79DF7298-7B08-4BDD-88A0-DAC5EF2BFB4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79DF7298-7B08-4BDD-88A0-DAC5EF2BFB4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79DF7298-7B08-4BDD-88A0-DAC5EF2BFB4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79DF7298-7B08-4BDD-88A0-DAC5EF2BFB4E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

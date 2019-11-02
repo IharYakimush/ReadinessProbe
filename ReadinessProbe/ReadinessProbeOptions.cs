@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Net;
-using Microsoft.Extensions.Options;
 
 namespace ReadinessProbe
 {
-    public class ReadinessProbeOptions : IOptions<ReadinessProbeOptions>
+    public class ReadinessProbeOptions 
     {
         public HttpStatusCode ReadyCode { get; set; } = HttpStatusCode.OK;
         public HttpStatusCode NotReadyCode { get; set; } = HttpStatusCode.ServiceUnavailable;        
@@ -15,7 +14,5 @@ namespace ReadinessProbe
         public bool LogRequestAborted { get; set; } = true;
 
         public string LoggerCategory { get; set; } = "ReadinessProbe";
-
-        ReadinessProbeOptions IOptions<ReadinessProbeOptions>.Value => this;
     }
 }

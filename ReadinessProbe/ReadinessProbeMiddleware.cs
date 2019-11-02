@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 
 namespace ReadinessProbe
 {
@@ -15,19 +14,24 @@ namespace ReadinessProbe
         private static readonly EventId NotReadyEvent = new EventId(503, "ReadinessCheckNegative");
         private static readonly EventId RequestAbortedEvent = new EventId(505, "ReadinessCheckRequestAborted");
 
-        public ReadinessProbeMiddleware(IOptions<ReadinessProbeOptions> options, ILoggerFactory loggerFactory = null)
+        public ReadinessProbeMiddleware(ReadinessProbeOptions options, ILoggerFactory loggerFactory = null)
         {
-            Options = options.Value;
+            Options = options ?? throw new ArgumentNullException(nameof(options));
             loggerFactory = loggerFactory ?? new NullLoggerFactory();
-            logger = loggerFactory.CreateLogger(this.Options.LoggerCategory);
+            Logger = loggerFactory.CreateLogger(this.Options.LoggerCategory);
         }
 
         public ReadinessProbeOptions Options { get; }
 
-        public ILogger logger;
+        public ILogger Logger { get; }
 
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (!context.Response.HasStarted)
             {
                 foreach (var check in context.RequestServices.GetServices<IReadinessCheck>())
@@ -44,7 +48,7 @@ namespace ReadinessProbe
 
                             if (this.Options.LogNotReady)
                             {
-                                this.logger.LogError(NotReadyEvent, NotReadyEvent.Name);
+                                this.Logger.LogError(NotReadyEvent, NotReadyEvent.Name);
                             }
 
                             return;
@@ -56,7 +60,7 @@ namespace ReadinessProbe
                         {
                             if (this.Options.LogRequestAborted)
                             {
-                                this.logger.LogWarning(RequestAbortedEvent, canceledException, RequestAbortedEvent.Name);
+                                this.Logger.LogWarning(RequestAbortedEvent, canceledException, RequestAbortedEvent.Name);
                             }
 
                             return;
@@ -85,7 +89,7 @@ namespace ReadinessProbe
 
             if (this.Options.LogError)
             {
-                this.logger.LogError(ExceptionEvent, e, ExceptionEvent.Name);
+                this.Logger.LogError(ExceptionEvent, e, ExceptionEvent.Name);
             }
         }
     }

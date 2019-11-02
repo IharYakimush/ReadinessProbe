@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
+
 using System;
 using System.Linq;
 
@@ -31,7 +31,7 @@ namespace ReadinessProbe
 
             builder?.Invoke(options);
 
-            services.TryAddSingleton<IOptions<ReadinessProbeOptions>>(options);
+            services.TryAddSingleton(options);
 
             services.TryAddSingleton<ReadinessProbeMiddleware>();
 
@@ -40,9 +40,10 @@ namespace ReadinessProbe
 
         public static IServiceCollection AddReadinessIndicatorFor<T>(this IServiceCollection services)
         {
-            if (services.Any(d => d.ImplementationType==typeof(ReadinessIndicatorFor<T>)))
+            if (services.Any(d => d.ServiceType == typeof(ReadinessIndicatorFor<T>)))
             {
-                throw new InvalidOperationException($"ReadinessIndicatorFor {typeof(T)} already added. Only one instance allowed");
+                throw new InvalidOperationException(
+                    $"ReadinessIndicatorFor {typeof(T)} already added. Only one instance allowed");
             }
 
             ReadinessIndicatorFor<T> indicator = new ReadinessIndicatorFor<T>();
