@@ -13,7 +13,6 @@ namespace ReadinessProbe
     {
         private static readonly EventId ExceptionEvent = new EventId(500, "ReadinessCheckException");
         private static readonly EventId NotReadyEvent = new EventId(503, "ReadinessCheckNegative");
-        private static readonly EventId TimeoutEvent = new EventId(504, "ReadinessCheckTimeout");
         private static readonly EventId RequestAbortedEvent = new EventId(505, "ReadinessCheckRequestAborted");
 
         public ReadinessProbeMiddleware(IOptions<ReadinessProbeOptions> options, ILoggerFactory loggerFactory = null)
@@ -31,18 +30,13 @@ namespace ReadinessProbe
         {
             if (!context.Response.HasStarted)
             {
-                CancellationTokenSource timeout = new CancellationTokenSource(this.Options.CheckAllTimeout);
-
-                CancellationTokenSource linkedTokenSource =
-                    CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted, timeout.Token);
-
                 foreach (var check in context.RequestServices.GetServices<IReadinessCheck>())
                 {
                     try
                     {
-                        linkedTokenSource.Token.ThrowIfCancellationRequested();
+                        context.RequestAborted.ThrowIfCancellationRequested();
 
-                        bool result = await check.Check(linkedTokenSource.Token);
+                        bool result = await check.Check(context.RequestAborted);
 
                         if (!result)
                         {
@@ -63,18 +57,6 @@ namespace ReadinessProbe
                             if (this.Options.LogRequestAborted)
                             {
                                 this.logger.LogWarning(RequestAbortedEvent, canceledException, RequestAbortedEvent.Name);
-                            }
-
-                            return;
-                        }
-
-                        if (timeout.IsCancellationRequested)
-                        {
-                            context.Response.StatusCode = (int)this.Options.TimeoutCode;
-
-                            if (this.Options.LogTimeout)
-                            {
-                                this.logger.LogError(TimeoutEvent, canceledException, TimeoutEvent.Name);
                             }
 
                             return;

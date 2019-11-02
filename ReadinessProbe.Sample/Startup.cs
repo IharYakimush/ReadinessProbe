@@ -15,7 +15,14 @@ namespace ReadinessProbe.Sample
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            // registed readiness probe services
             services.AddReadinessProbe();
+
+            // registed long running action as hosted service.
+            services.AddHostedService<LongRunningAction>();
+
+            // registed rediness indicator which will be used by LongRunningAction for completion notice.
+            services.AddReadinessIndicatorFor<LongRunningAction>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -33,12 +33,21 @@ namespace ReadinessProbe
 
             services.TryAddSingleton<IOptions<ReadinessProbeOptions>>(options);
 
-            if (!services.Any(d => d.ServiceType == typeof(IReadinessCheck)))
+            services.TryAddSingleton<ReadinessProbeMiddleware>();
+
+            return services;
+        }
+
+        public static IServiceCollection AddReadinessIndicatorFor<T>(this IServiceCollection services)
+        {
+            if (services.Any(d => d.ImplementationType==typeof(ReadinessIndicatorFor<T>)))
             {
-                services.AddSingleton<IReadinessCheck>(DefaultReadinessCheck.Instance);
+                throw new InvalidOperationException($"ReadinessIndicatorFor {typeof(T)} already added. Only one instance allowed");
             }
 
-            services.TryAddSingleton<ReadinessProbeMiddleware>();
+            ReadinessIndicatorFor<T> indicator = new ReadinessIndicatorFor<T>();
+            services.AddSingleton(indicator);
+            services.AddSingleton<IReadinessCheck>(new ReadinessIndicatorCheck(indicator));
 
             return services;
         }
