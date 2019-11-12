@@ -24,6 +24,7 @@ namespace ReadinessProbe.Sample
                 Console.WriteLine($"{i + 1}/{l}");
             }
 
+            // let readiness endpoint know that this action have finished
             this.ReadinessIndicator.Ready();
         }
     }
