@@ -3,7 +3,7 @@ Adds readiness probe endpoint which can be used by kubernetes. Allows to perform
 # Sample
 Considering the case when readines endpoint should return 200 status code only after finishing some long running action. 
 ```
-	public class Startup
+    public class Startup
     {
         public void ConfigureServices(IServiceCollection services)
         {
@@ -14,13 +14,13 @@ Considering the case when readines endpoint should return 200 status code only a
             services.AddHostedService<LongRunningAction>();
 
             // registed rediness indicator which will be used by LongRunningAction for completion notice.
-			// multiple indicators can be registered if you want to wait for multiple actions
+            // multiple indicators can be registered if you want to wait for multiple actions
             services.AddReadinessIndicatorFor<LongRunningAction>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-			// readiness probe endpoint
+            // readiness probe endpoint
             app.UseReadinessProbe();
 
             app.Run(async (context) =>
@@ -31,7 +31,7 @@ Considering the case when readines endpoint should return 200 status code only a
     }
 ```
 ```
-	public class LongRunningAction : BackgroundService
+    public class LongRunningAction : BackgroundService
     {
         public LongRunningAction(ReadinessIndicatorFor<LongRunningAction> readinessIndicator)
         {
@@ -55,3 +55,5 @@ Considering the case when readines endpoint should return 200 status code only a
         }
     }
 ```
+# nuget
+https://www.nuget.org/packages/ReadinessProbe
